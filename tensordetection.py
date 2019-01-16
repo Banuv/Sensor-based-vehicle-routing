@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
         boxes, scores, classes, num = odapi.processFrame(img)
 
-        # Visualization of the results of a detection.
+# Visualization of the results of a detection.
         count = 0
         s1, s2, s3, s4 = 0, 0, 0, 0
         

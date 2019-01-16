@@ -15,14 +15,14 @@ class Node():
         return self.position == other.position
 
 
-def astar(maze, start, end):
-    """Returns a list of tuples as a path from the given start to the given end in the given maze"""
+def astar(heatmap_matrix, start, end):
+    """Returns a list of tuples as a path from the given start to the given end in the given heatmap_matrix"""
 
     # Create start and end node
     start_node = Node(None, start)
     start_node.g = start_node.h = start_node.f = 0
-    end_node = Node(None, end)
-    end_node.g = end_node.h = end_node.f = 0
+    goal_node = Node(None, end)
+    goal_node.g = goal_node.h = goal_node.f = 0
 
     # Initialize both open and closed list
     open_list = []
@@ -47,13 +47,19 @@ def astar(maze, start, end):
         closed_list.append(current_node)
 
         # Found the goal
-        if current_node == end_node:
+        if current_node == goal_node:
             path = []
+            total_cost = 0
+            movement_cost = 0
+            heuristic_cost = 0
             current = current_node
             while current is not None:
                 path.append(current.position)
+                total_cost = total_cost + current.f
+                movement_cost = movement_cost + current.g
+                heuristic_cost = heuristic_cost + current.h 
                 current = current.parent
-            return path[::-1] # Return reversed path
+            return path[::-1],total_cost,movement_cost,heuristic_cost # Return reversed path and total costs
 
         # Generate children
         children = []
@@ -63,11 +69,11 @@ def astar(maze, start, end):
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # Make sure within range
-            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
+            if node_position[0] > (len(heatmap_matrix) - 1) or node_position[0] < 0 or node_position[1] > (len(heatmap_matrix[len(heatmap_matrix)-1]) -1) or node_position[1] < 0:
                 continue
 
             # Make sure walkable terrain
-            #if maze[node_position[0]][node_position[1]] != 0:
+            #if heatmap_matrix[node_position[0]][node_position[1]] != 0:
             #    continue
 
             # Create new node
@@ -85,9 +91,9 @@ def astar(maze, start, end):
                     continue
 
             # Create the f, g, and h values
-            child.g = current_node.g + maze[child.position[0]][child.position[1]]
+            child.g = current_node.g + heatmap_matrix[child.position[0]][child.position[1]]
 #           print (child.g)
-            child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
+            child.h = ((child.position[0] - goal_node.position[0]) ** 2) + ((child.position[1] - goal_node.position[1]) ** 2)
             child.f = child.g + child.h
 
             # Child is already in the open list
@@ -101,16 +107,32 @@ def astar(maze, start, end):
 
 def main():
 
-    maze = format.format()
+    heatmap_matrix = format.format()
     print("heatmap matrix:")
-    print(maze)
+    print(heatmap_matrix)
+    startx, starty = input("Enter start co-ordinates here: ").split()
+    endx, endy = input("Enter end co-ordinates here: ").split()
+    start = (int(startx), int(starty))
+    end = (int(endx), int(endy))
 
-    start = (0, 3)
-    end = (7, 3)
-
-    path = astar(maze, start, end)
+    path,total_cost,movement_cost,heuristic_cost, = astar(heatmap_matrix, start, end)
     print("The optimal path is:")
     print(path)
+    for i in range(len(heatmap_matrix)):
+        for j in range (0, 4):
+            for p in range(len(path)):
+                if i == path[p][0] and j == path[p][1]:
+                    heatmap_matrix[i][j] = '*'
+    
+    
+    for i in reversed((heatmap_matrix)):
+        print(i) 
+    
+      
+    print("Total cost:"+ str(total_cost))
+    print("movement_cost:"+ str(movement_cost))
+    print("heuristic_cost:"+ str(heuristic_cost))
+    
 
 
 if __name__ == '__main__':
